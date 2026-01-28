@@ -8,16 +8,17 @@ export default async function handler(req, res) {
 
   const { content, ttl_seconds, max_views } = req.body;
 
-  if (!content || typeof content !== "string") {
-    return res.status(400).json({ error: "Invalid content" });
+  // ✅ Validation
+  if (!content || typeof content !== "string" || !content.trim()) {
+    return res.status(400).json({ error: "Content is required" });
   }
 
-  if (ttl_seconds && ttl_seconds < 1) {
-    return res.status(400).json({ error: "Invalid ttl_seconds" });
+  if (ttl_seconds && (!Number.isInteger(ttl_seconds) || ttl_seconds < 1)) {
+    return res.status(400).json({ error: "ttl_seconds must be >= 1" });
   }
 
-  if (max_views && max_views < 1) {
-    return res.status(400).json({ error: "Invalid max_views" });
+  if (max_views && (!Number.isInteger(max_views) || max_views < 1)) {
+    return res.status(400).json({ error: "max_views must be >= 1" });
   }
 
   const id = nanoid(8);
@@ -27,17 +28,18 @@ export default async function handler(req, res) {
     expiresAt = new Date(Date.now() + ttl_seconds * 1000);
   }
 
-  await prisma.paste.create({
+  const paste = await prisma.paste.create({
     data: {
       id,
       content,
       expiresAt,
-      maxViews: max_views || null,
+      maxViews: max_views ?? null,
+      views: 0,
     },
   });
 
-  res.status(200).json({
-    id,
-    url: `${process.env.NEXT_PUBLIC_BASE_URL}/p/${id}`,
+  return res.status(200).json({
+    id: paste.id,
+    url: `${process.env.NEXT_PUBLIC_BASE_URL}/p/${paste.id}`,
   });
 }
