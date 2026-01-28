@@ -1,44 +1,38 @@
-import React from "react";
-
-export default function PastePage({ paste, error }) {
-  if (error) {
-    return <h2 style={{ padding: 40 }}>{error}</h2>;
-  }
-
+export default function PastePage({ paste }) {
   return (
-    <div style={{ padding: 40 }}>
-      <h1>Paste</h1>
-      <pre
-        style={{
-          background: "#f4f4f4",
-          padding: 20,
-          borderRadius: 6,
-          whiteSpace: "pre-wrap",
-        }}
-      >
-        {paste.content}
-      </pre>
-
-      {paste.expiresAt && (
-        <p>Expires at: {new Date(paste.expiresAt).toLocaleString()}</p>
-      )}
-
-      {paste.maxViews && <p>Remaining views: {paste.remainingViews}</p>}
+    <div style={styles.page}>
+      <div style={styles.card}>
+        <h2>📄 Your Paste</h2>
+        <pre style={styles.pre}>{paste.content}</pre>
+        <p style={styles.meta}>Remaining Views: {paste.max_views}</p>
+      </div>
     </div>
   );
 }
 
-export async function getServerSideProps({ params, req }) {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    `http://${req.headers.host}`;
-
-  const res = await fetch(`${baseUrl}/api/pastes/${params.id}`);
-  const data = await res.json();
-
-  if (!res.ok) {
-    return { props: { error: data.error || "Not found" } };
-  }
-
-  return { props: { paste: data } };
-}
+const styles = {
+  page: {
+    minHeight: "100vh",
+    background: "#eef2ff",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  card: {
+    background: "#fff",
+    padding: 30,
+    width: 600,
+    borderRadius: 12,
+    boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+  },
+  pre: {
+    background: "#f8fafc",
+    padding: 15,
+    borderRadius: 8,
+    whiteSpace: "pre-wrap",
+  },
+  meta: {
+    marginTop: 10,
+    color: "#555",
+  },
+};
